@@ -1460,8 +1460,18 @@ auto Interpreter::StepExp() -> ErrorOr<Success> {
             CARBON_ASSIGN_OR_RETURN(
                 const auto* pointee,
                 this->heap_.Read(ptr->address(), exp.source_loc()));
-            return todo_.Spawn(std::make_unique<DestroyAction>(
-                arena_->New<LValue>(ptr->address()), pointee));
+            if (const auto* class_value = dyn_cast<NominalClassValue>(pointee);
+                class_value && class_value != *class_value->class_value_ptr()) {
+              const auto* child_class_value = *class_value->class_value_ptr();
+              const auto alloc_id = heap_.GetAllocationId(child_class_value);
+              CARBON_CHECK(alloc_id)
+                  << "Unable to get allocation ID for `" << *ptr << "`";
+              return todo_.Spawn(std::make_unique<DestroyAction>(
+                  arena_->New<LValue>(Address(*alloc_id)), child_class_value));
+            } else {
+              return todo_.Spawn(std::make_unique<DestroyAction>(
+                  arena_->New<LValue>(ptr->address()), pointee));
+            }
           } else {
             heap_.Deallocate(ptr->address());
             return todo_.FinishAction(TupleValue::Empty());
