@@ -29,8 +29,7 @@ def find_guard(
     if from_end:
         lines_range = reversed(lines)
     for index, line in enumerate(lines_range):
-        m = re.match(pattern, line)
-        if m:
+        if m := re.match(pattern, line):
             if from_end:
                 index = len(lines) - index - 1
             return Guard(index, m[1])

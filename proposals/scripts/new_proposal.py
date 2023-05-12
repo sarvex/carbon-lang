@@ -77,14 +77,14 @@ def _calculate_branch(parsed_args: argparse.Namespace) -> str:
         assert isinstance(parsed_args.branch, str)
         return parsed_args.branch
     # Only use the first 20 chars of the title for branch names.
-    return "proposal-%s" % (parsed_args.title.lower().replace(" ", "-")[0:20])
+    return f'proposal-{parsed_args.title.lower().replace(" ", "-")[:20]}'
 
 
 def _find_tool(tool: str) -> str:
     """Checks if a tool is present."""
     tool_path = shutil.which(tool)
     if not tool_path:
-        exit("ERROR: Missing the '%s' command-line tool." % tool)
+        exit(f"ERROR: Missing the '{tool}' command-line tool.")
     return tool_path
 
 
@@ -119,20 +119,15 @@ def _run(
     cmd = " ".join([shlex.quote(x) for x in argv])
     print("\n+ RUNNING: %s" % cmd, file=sys.stderr)
 
-    stdout_pipe = None
-    if get_stdout:
-        stdout_pipe = subprocess.PIPE
-
+    stdout_pipe = subprocess.PIPE if get_stdout else None
     p = subprocess.Popen(argv, stdout=stdout_pipe)
     stdout, _ = p.communicate()
     if get_stdout:
         out = stdout.decode("utf-8")
         print(out, end="")
     if check and p.returncode != 0:
-        exit("ERROR: Command failed: %s" % cmd)
-    if get_stdout:
-        return out
-    return None
+        exit(f"ERROR: Command failed: {cmd}")
+    return out if get_stdout else None
 
 
 def _run_pr_create(argv: List[str]) -> int:
@@ -144,7 +139,7 @@ def _run_pr_create(argv: List[str]) -> int:
     )
     if not match:
         exit("ERROR: Failed to find PR# in output.")
-    return int(match.group(1))
+    return int(match[1])
 
 
 def main() -> None:
@@ -184,7 +179,7 @@ def main() -> None:
     temp_path = os.path.join(proposals_dir, "new-proposal.tmp.md")
     shutil.copyfile(template_path, temp_path)
     _run([git_bin, "add", temp_path])
-    _run([git_bin, "commit", "-m", "Creating new proposal: %s" % title])
+    _run([git_bin, "commit", "-m", f"Creating new proposal: {title}"])
 
     # Create a PR with WIP+proposal labels.
     _run([git_bin, "push"])

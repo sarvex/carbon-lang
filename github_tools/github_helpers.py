@@ -50,7 +50,7 @@ class Client:
         """Connects to GitHub."""
         transport = gql.transport.requests.RequestsHTTPTransport(
             url="https://api.github.com/graphql",
-            headers={"Authorization": "bearer %s" % parsed_args.access_token},
+            headers={"Authorization": f"bearer {parsed_args.access_token}"},
         )
         self._client = gql.Client(transport=transport)
 
@@ -106,4 +106,4 @@ class Client:
                     path,
                 )
                 return
-            format["cursor"] = ' after: "%s"' % page_info["endCursor"]
+            format["cursor"] = f' after: "{page_info["endCursor"]}"'

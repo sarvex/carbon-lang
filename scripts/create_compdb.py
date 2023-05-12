@@ -17,6 +17,7 @@ you do hit errors, you can get things back to a good state by fixing the
 build of generated files and re-running this script.
 """
 
+
 __copyright__ = """
 Part of the Carbon Language project, under the Apache License v2.0 with LLVM
 Exceptions. See /LICENSE for license information.
@@ -45,7 +46,7 @@ try:
     with open("compile_flags.txt") as flag_file:
         arguments = [line.strip() for line in flag_file]
 except FileNotFoundError:
-    sys.exit(Path(sys.argv[0]).name + " must be run from the project root")
+    sys.exit(f"{Path(sys.argv[0]).name} must be run from the project root")
 
 # Prepend the `clang` executable path to the arguments that looks into our
 # downloaded Clang toolchain.

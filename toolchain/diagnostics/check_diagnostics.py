@@ -6,6 +6,7 @@ Validates that each diagnostic declared with CARBON_DIAGNOSTIC_KIND is
 referenced by one (and only one) CARBON_DIAGNOSTIC.
 """
 
+
 __copyright__ = """
 Part of the Carbon Language project, under the Apache License v2.0 with LLVM
 Exceptions. See /LICENSE for license information.
@@ -23,7 +24,7 @@ from typing import Dict, List, NamedTuple, Set
 
 
 # Example or test diagnostics, ignored because they're expected to not pass.
-IGNORED = set(["MyDiagnostic", "TestDiagnostic", "TestDiagnosticNote"])
+IGNORED = {"MyDiagnostic", "TestDiagnostic", "TestDiagnosticNote"}
 
 
 class Location(NamedTuple):

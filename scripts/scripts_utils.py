@@ -68,10 +68,10 @@ def _get_hash(file: Path) -> str:
     digest = hashlib.sha256()
     with file.open("rb") as f:
         while True:
-            chunk = f.read(1024 * 64)
-            if not chunk:
+            if chunk := f.read(1024 * 64):
+                digest.update(chunk)
+            else:
                 break
-            digest.update(chunk)
     return digest.hexdigest()
 
 
@@ -99,11 +99,7 @@ def get_release(release: Release) -> str:
         machine = "amd64"
     version = f"{platform.system().lower()}-{machine}"
 
-    # Get ready to add .exe for Windows.
-    ext = ""
-    if platform.system() == "Windows":
-        ext = ".exe"
-
+    ext = ".exe" if platform.system() == "Windows" else ""
     # Ensure the platform is supported, and grab its hash.
     if version not in _VERSION_SHAS[release.value]:
         # If this because a platform support issue, we may need to print errors.
@@ -154,13 +150,11 @@ def locate_bazel() -> str:
     We use the `BAZEL` environment variable if present. If not, then we try to
     use `bazelisk` and then `bazel`.
     """
-    bazel = os.environ.get("BAZEL")
-    if bazel:
+    if bazel := os.environ.get("BAZEL"):
         return bazel
 
     for cmd in ("bazelisk", "bazel"):
-        target = shutil.which(cmd)
-        if target:
+        if target := shutil.which(cmd):
             return target
 
     exit("Unable to run Bazel")

@@ -227,13 +227,12 @@ class TestPRComments(unittest.TestCase):
         body="comment",
         created_at="2001-02-03T04:05:06Z",
     ):
-        pr_comment_dict = {
+        return {
             "author": {"login": "author"},
             "body": body,
             "createdAt": created_at,
             "url": "http://xyz",
         }
-        return pr_comment_dict
 
     def test_pr_comment_format(self):
         self.assertEqual(

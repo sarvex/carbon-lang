@@ -63,7 +63,7 @@ class _Table:
 
 def _print_header(msg: str) -> None:
     """Prints a header, mostly for debug output."""
-    print(("=== %s " % msg).ljust(79, "="))
+    print(f"=== {msg} ".ljust(79, "="))
 
 
 def _print_footer() -> None:
@@ -103,7 +103,7 @@ def _find_string_end(content: str, start: int) -> int:
         elif c == quote:
             return i
         i += 1
-    exit("failed to find end of string: %s" % content[start : start + 20])
+    exit(f"failed to find end of string: {content[start:start + 20]}")
 
 
 def _find_brace_end(content: str, has_percent: bool, start: int) -> int:
@@ -114,7 +114,7 @@ def _find_brace_end(content: str, has_percent: bool, start: int) -> int:
     i = start
     while i < len(content):
         c = content[i]
-        if c == '"' or c == "'":
+        if c in ['"', "'"]:
             # Skip over strings.
             i = _find_string_end(content, i)
         elif c == "/" and content[i + 1 : i + 2] == "/":
@@ -127,7 +127,7 @@ def _find_brace_end(content: str, has_percent: bool, start: int) -> int:
         elif c == "}" and (not has_percent or content[i - 1] == "%"):
             return i
         i += 1
-    exit("failed to find end of brace: %s" % content[start : start + 20])
+    exit(f"failed to find end of brace: {content[start:start + 20]}")
 
 
 def _add_text_segment(
@@ -173,49 +173,48 @@ def _maybe_add_cpp_segment(
         # likely a non-formattable braced section, such as `{AND}`.
         # Keep treating it as text.
         return (end, False)
-    else:
-        # Code has been found. First, record the text segment; then,
-        # indicate the non-text segment.
-        _add_text_segment(
-            text_segments, content[text_segment_start:cpp_segment_start], debug
-        )
-        text_segments.append(None)
+    # Code has been found. First, record the text segment; then,
+    # indicate the non-text segment.
+    _add_text_segment(
+        text_segments, content[text_segment_start:cpp_segment_start], debug
+    )
+    text_segments.append(None)
 
-        # If the opening brace is the first character on its line, use
-        # its indent when wrapping.
-        close_brace_indent = 0
-        line_offset = content.rfind("\n", 0, cpp_segment_start)
-        if content[line_offset + 1 : cpp_segment_start].isspace():
-            close_brace_indent = cpp_segment_start - line_offset - 1
+    # If the opening brace is the first character on its line, use
+    # its indent when wrapping.
+    close_brace_indent = 0
+    line_offset = content.rfind("\n", 0, cpp_segment_start)
+    if content[line_offset + 1 : cpp_segment_start].isspace():
+        close_brace_indent = cpp_segment_start - line_offset - 1
 
-        # Construct the code segment.
-        cpp_segment = _CppCode(
-            len(text_segments) - 1,
-            braced_content,
-            cpp_segment_start - (line_offset + 1),
-            close_brace_indent,
-            has_percent,
-        )
-        if debug:
-            _print_header("C++ segment")
-            print(cpp_segment.content)
-            print(
-                "Structure: { at %d; } at %d; %%: %s"
-                % (
-                    cpp_segment.open_brace_column,
-                    cpp_segment.close_brace_indent,
-                    cpp_segment.has_percent,
-                )
+    # Construct the code segment.
+    cpp_segment = _CppCode(
+        len(text_segments) - 1,
+        braced_content,
+        cpp_segment_start - (line_offset + 1),
+        close_brace_indent,
+        has_percent,
+    )
+    if debug:
+        _print_header("C++ segment")
+        print(cpp_segment.content)
+        print(
+            "Structure: { at %d; } at %d; %%: %s"
+            % (
+                cpp_segment.open_brace_column,
+                cpp_segment.close_brace_indent,
+                cpp_segment.has_percent,
             )
-            _print_footer()
+        )
+        _print_footer()
 
-        # Record the code segment.
-        if close_brace_indent not in cpp_segments:
-            cpp_segments[close_brace_indent] = []
-        cpp_segments[close_brace_indent].append(cpp_segment)
+    # Record the code segment.
+    if close_brace_indent not in cpp_segments:
+        cpp_segments[close_brace_indent] = []
+    cpp_segments[close_brace_indent].append(cpp_segment)
 
-        # Increment cursors.
-        return (end, True)
+    # Increment cursors.
+    return (end, True)
 
 
 def _parse_comment(
@@ -239,34 +238,29 @@ def _parse_comment(
     comment_end = content.find(comment_end_str, cursor + len(comment_start_str))
     if comment_end == -1:
         exit(
-            "failed to find end of %s comment: %s"
-            % (comment_start_str, content[cursor : cursor + 20])
+            f"failed to find end of {comment_start_str} comment: {content[cursor:cursor + 20]}"
         )
     if comment_end_str != "\n":
         comment_end += len(comment_end_str)
-    if content[cursor : comment_end + 1] == table_start_str:
-        m = re.compile(table_end_pattern).search(content, comment_end)
-        if not m:
-            exit(
-                "failed to find end of table: `%s`"
-                % content[comment_end : comment_end + 20]
-            )
-        _add_text_segment(
-            text_segments, content[text_segment_start : comment_end + 1], debug
-        )
-        text_segments.append(None)
-        table_segment = _Table(
-            len(text_segments) - 1, content[comment_end + 1 : m.start()]
-        )
-        table_segments.append(table_segment)
-        if debug:
-            _print_header("Table segment")
-            print(table_segment.content)
-            _print_footer()
-
-        return m.start(), m.end()
-    else:
+    if content[cursor : comment_end + 1] != table_start_str:
         return text_segment_start, comment_end - 1
+    m = re.compile(table_end_pattern).search(content, comment_end)
+    if not m:
+        exit(f"failed to find end of table: `{content[comment_end:comment_end + 20]}`")
+    _add_text_segment(
+        text_segments, content[text_segment_start : comment_end + 1], debug
+    )
+    text_segments.append(None)
+    table_segment = _Table(
+        len(text_segments) - 1, content[comment_end + 1 : m.start()]
+    )
+    table_segments.append(table_segment)
+    if debug:
+        _print_header("Table segment")
+        print(table_segment.content)
+        _print_footer()
+
+    return m.start(), m.end()
 
 
 def _parse_segments(
@@ -288,7 +282,7 @@ def _parse_segments(
     table_segments: List[_Table] = []
     while i < len(content):
         c = content[i]
-        if c == '"' or c == "'":
+        if c in ['"', "'"]:
             # Skip over strings.
             i = _find_string_end(content, i)
         elif c == "/" and content[i + 1 : i + 2] == "*":
@@ -404,8 +398,8 @@ def _format_table_segments(
         lines.sort()
         rows: List[List[str]] = []
         col_widths: List[int] = []
-        for row_index in range(len(lines)):
-            cols = re.findall("[^ ]+", lines[row_index])
+        for line_ in lines:
+            cols = re.findall("[^ ]+", line_)
             rows.append(cols)
             if not col_widths:
                 if len(cols) == 0:
@@ -413,8 +407,10 @@ def _format_table_segments(
                 col_widths = [0] * len(cols)
             elif len(col_widths) != len(cols):
                 exit(
-                    "Wanted %d columns, found %d in `%s`"
-                    % (len(col_widths), len(cols), lines[row_index])
+                    (
+                        "Wanted %d columns, found %d in `%s`"
+                        % (len(col_widths), len(cols), line_)
+                    )
                 )
             for col_index in range(len(cols)):
                 col_widths[col_index] = max(

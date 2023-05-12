@@ -75,9 +75,7 @@ class TestGithubHelpers(unittest.TestCase):
     def mock_result(nodes, total_count=None, has_next_page=False):
         if total_count is None:
             total_count = len(nodes)
-        end_cursor = None
-        if has_next_page:
-            end_cursor = "CURSOR"
+        end_cursor = "CURSOR" if has_next_page else None
         return {
             "top": {
                 "child": {
@@ -133,7 +131,7 @@ class TestGithubHelpers(unittest.TestCase):
             elif query == _EXP_QUERY_SECOND_PAGE:
                 return self.mock_result(["baz"], total_count="unused")
             else:
-                raise ValueError("Bad query: %s" % query)
+                raise ValueError(f"Bad query: {query}")
 
         self.client.execute = mock.MagicMock(side_effect=paging)
         self.assertEqual(

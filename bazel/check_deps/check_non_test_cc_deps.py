@@ -11,6 +11,7 @@ our test code. Here, we verify that the dependencies of non-test C++ rules only
 include Carbon and LLVM code.
 """
 
+
 __copyright__ = """
 Part of the Carbon Language project, under the Apache License v2.0 with LLVM
 Exceptions. See /LICENSE for license information.
@@ -29,10 +30,10 @@ try:
     with deps_path.open() as deps_file:
         deps = deps_file.read().splitlines()
 except FileNotFoundError:
-    sys.exit("ERROR: unable to find deps file: %s" % deps_path)
+    sys.exit(f"ERROR: unable to find deps file: {deps_path}")
 
 for dep in deps:
-    print("Checking dependency: " + dep)
+    print(f"Checking dependency: {dep}")
     repo, _, rule = dep.partition("//")
     if repo == "" and not rule.startswith("third_party"):
         # Carbon code is always allowed.
@@ -43,16 +44,11 @@ for dep in deps:
         # Other packages in the LLVM project shouldn't be accidentally used
         # in Carbon. We can expand the above list if use cases emerge.
         if package not in ("llvm", "lld", "clang"):
-            sys.exit(
-                "ERROR: unexpected dependency into the LLVM project: %s" % dep
-            )
+            sys.exit(f"ERROR: unexpected dependency into the LLVM project: {dep}")
 
         # Check for accidentally using the copy of GoogleTest in LLVM.
         if rule in ("gmock", "gtest", "gtest_main"):
-            sys.exit(
-                "ERROR: dependency on LLVM's GoogleTest from non-test code: %s"
-                % dep
-            )
+            sys.exit(f"ERROR: dependency on LLVM's GoogleTest from non-test code: {dep}")
 
         # The rest of LLVM, LLD, and Clang themselves are safe to depend on.
         continue
@@ -69,7 +65,7 @@ for dep in deps:
         # This should never be reached from non-test code, but these targets do
         # exist. Specially diagnose them to try to provide a more helpful
         # message.
-        sys.exit("ERROR: dependency only allowed in test code: %s" % dep)
+        sys.exit(f"ERROR: dependency only allowed in test code: {dep}")
 
     # Conservatively fail if a dependency isn't explicitly allowed above.
-    sys.exit("ERROR: unknown dependency: %s" % dep)
+    sys.exit(f"ERROR: unknown dependency: {dep}")

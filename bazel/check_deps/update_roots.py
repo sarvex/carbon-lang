@@ -6,6 +6,7 @@ The dependency checking cannot use wildcard queries, so we use them here and
 then create lists of relevant roots in the build file.
 """
 
+
 __copyright__ = """
 Part of the Carbon Language project, under the Apache License v2.0 with LLVM
 Exceptions. See /LICENSE for license information.
@@ -42,12 +43,16 @@ print("Found roots:\n%s" % "\n".join(roots))
 
 print("Replace non-test C++ roots in the BUILD file...")
 buildozer_run = subprocess.run(
-    [
-        "./scripts/run_buildozer.py",
-        "remove data",
-    ]
-    + ["add data '%s'" % root for root in roots]
-    + ["//bazel/check_deps:non_test_cc_rules"],
+    (
+        (
+            [
+                "./scripts/run_buildozer.py",
+                "remove data",
+            ]
+            + [f"add data '{root}'" for root in roots]
+        )
+        + ["//bazel/check_deps:non_test_cc_rules"]
+    )
 )
 if buildozer_run.returncode == 3:
     print("No changes needed!")

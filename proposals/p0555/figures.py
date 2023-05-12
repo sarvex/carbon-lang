@@ -20,10 +20,8 @@ def escape(s):
 
 
 def tablejoin(items, separator):
-    data = ("<td>%s</td>" % separator).join(
-        "<td>%s</td>" % item for item in items
-    )
-    return '<table border="0"><tr>%s</tr></table>' % data
+    data = f"<td>{separator}</td>".join(f"<td>{item}</td>" for item in items)
+    return f'<table border="0"><tr>{data}</tr></table>'
 
 
 def code(s):
@@ -38,15 +36,12 @@ def code(s):
         % escape(part)
         for part in s
     )
-    return (
-        '<table border="0" bgcolor="#f2f3f3"><tr><td>%s</td></tr></table>'
-        % codefont
-    )
+    return f'<table border="0" bgcolor="#f2f3f3"><tr><td>{codefont}</td></tr></table>'
 
 
 def math(s):
     # Render math in italics but otherwise unchanged.
-    return "<i>%s</i>" % s
+    return f"<i>{s}</i>"
 
 
 def raw(s):
@@ -66,25 +61,20 @@ def group(ops, assoc=NonAssoc, style=code):
     num = num + 1
     name = "op%d" % num
     print(
-        "  %s [label=<%s>%s]"
-        % (
-            name,
-            tablejoin((style(op) for op in ops), ", "),
-            assoc,
-        ),
+        f'  {name} [label=<{tablejoin((style(op) for op in ops), ", ")}>{assoc}]',
         file=out,
     )
     return name
 
 
 def edge(a, b):
-    print("  %s -> %s" % (a, b), file=out)
+    print(f"  {a} -> {b}", file=out)
 
 
 def combine(name, items):
     if len(items) <= 1:
         return items
-    print("  %s [label=<<i>%s</i>> shape=ellipse]" % (name, name), file=out)
+    print(f"  {name} [label=<<i>{name}</i>> shape=ellipse]", file=out)
     res = name
     for i in items:
         edge(i, name)
@@ -94,13 +84,12 @@ def combine(name, items):
 def graph(f):
     import subprocess
 
-    outfile = open(f.__name__ + "." + fmt, "w")
+    outfile = open(f"{f.__name__}.{fmt}", "w")
     process = subprocess.Popen(
-        ["dot", "-T" + fmt],
+        ["dot", f"-T{fmt}"],
         stdin=subprocess.PIPE,
         stdout=outfile,
-        encoding="utf8"
-        # ["cat"], stdin=subprocess.PIPE, stdout=outfile, encoding='utf8'
+        encoding="utf8",
     )
     global out
     out = process.stdin

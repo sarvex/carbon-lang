@@ -103,10 +103,10 @@ class _Workflow:
         for f in self._cpp_files:
             parts = os.path.splitext(f)
             if parts[1] in _H_EXTS:
-                os.rename(f, parts[0] + ".carbon")
+                os.rename(f, f"{parts[0]}.carbon")
                 api_renames += 1
             else:
-                os.rename(f, parts[0] + ".impl.carbon")
+                os.rename(f, f"{parts[0]}.impl.carbon")
                 impl_renames += 1
         print(
             "Renaming resulted in %d API files and %d impl files."

@@ -135,15 +135,14 @@ class _Comment:
         lines = []
         for line in content.split("\n"):
             lines.extend(
-                [
-                    x
-                    for x in textwrap.wrap(
+                list(
+                    textwrap.wrap(
                         line,
                         width=80,
                         initial_indent=" " * 4,
                         subsequent_indent=" " * 4,
                     )
-                ]
+                )
             )
         return "\n".join(lines)
 
@@ -156,13 +155,12 @@ class _Comment:
                 self.timestamp.strftime("%Y-%m-%d %H:%M"),
                 self._rewrap(self.body),
             )
-        else:
-            # Compact newlines down into pilcrows, leaving a space after.
-            body = self.body.replace("\r", "").replace("\n", "¶ ")
-            while "¶ ¶" in body:
-                body = body.replace("¶ ¶", "¶¶")
-            line = "%s%s: %s" % (" " * 2, self.author, body)
-            return line if len(line) <= 80 else line[:77] + "..."
+        # Compact newlines down into pilcrows, leaving a space after.
+        body = self.body.replace("\r", "").replace("\n", "¶ ")
+        while "¶ ¶" in body:
+            body = body.replace("¶ ¶", "¶¶")
+        line = f'{" " * 2}{self.author}: {body}'
+        return line if len(line) <= 80 else f"{line[:77]}..."
 
 
 class _PRComment(_Comment):
@@ -234,32 +232,29 @@ class _Thread:
     def __lt__(self, other: "_Thread") -> bool:
         """Sort threads by line then timestamp."""
         if self.line != other.line:
-            return bool(self.line < other.line)
+            return self.line < other.line
         return self.comments[0].timestamp < other.comments[0].timestamp
 
     def format(self, long: bool) -> str:
         """Formats the review thread with comments."""
-        lines = []
-        lines.append(
-            "%s\n  - line %d; %s"
-            % (
-                self.url,
-                self.line,
-                ("resolved" if self.is_resolved else "unresolved"),
+        lines = [
+            (
+                "%s\n  - line %d; %s"
+                % (
+                    self.url,
+                    self.line,
+                    ("resolved" if self.is_resolved else "unresolved"),
+                )
             )
-        )
+        ]
         if self.diff_url:
-            lines.append("  - diff: %s" % self.diff_url)
-        for comment in self.comments:
-            lines.append(comment.format(long))
+            lines.append(f"  - diff: {self.diff_url}")
+        lines.extend(comment.format(long) for comment in self.comments)
         return "\n".join(lines)
 
     def has_comment_from(self, comments_from: str) -> bool:
         """Returns true if comments has a comment from comments_from."""
-        for comment in self.comments:
-            if comment.author == comments_from:
-                return True
-        return False
+        return any(comment.author == comments_from for comment in self.comments)
 
 
 def _parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
@@ -326,7 +321,7 @@ def _query(
         elif field_name == "reviews":
             format["reviews"] = _QUERY_REVIEWS
         else:
-            raise ValueError("Unexpected field_name: %s" % field_name)
+            raise ValueError(f"Unexpected field_name: {field_name}")
     else:
         # Fetch the first page of all fields.
         subformat = {"cursor": "", "pagination": github_helpers.PAGINATION}
