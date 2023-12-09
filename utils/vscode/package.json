@@ -37,9 +37,9 @@
     "package": "mkdir -p out && vsce package -o out/carbon.vsix"
   },
   "devDependencies": {
-    "@vscode/vsce": "^2.19.0"
+    "@vscode/vsce": "2.19.0"
   },
   "dependencies": {
-    "vscode-languageclient": "^8.1.0"
+    "vscode-languageclient": "8.1.0"
   }
 }
