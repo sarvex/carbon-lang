@@ -339,7 +339,10 @@ class NodeStack {
       case Parse::NodeKind::ReturnType:
       case Parse::NodeKind::SelfTypeNameExpr:
       case Parse::NodeKind::SelfValueNameExpr:
-      case Parse::NodeKind::ShortCircuitOperand:
+      case Parse::NodeKind::ShortCircuitOperandAnd:
+      case Parse::NodeKind::ShortCircuitOperandOr:
+      case Parse::NodeKind::ShortCircuitOperatorAnd:
+      case Parse::NodeKind::ShortCircuitOperatorOr:
       case Parse::NodeKind::StructFieldValue:
       case Parse::NodeKind::StructLiteral:
       case Parse::NodeKind::StructFieldType:
@@ -349,7 +352,7 @@ class NodeStack {
       case Parse::NodeKind::IfCondition:
       case Parse::NodeKind::IfExprIf:
       case Parse::NodeKind::ImplicitParamList:
-      case Parse::NodeKind::ParamList:
+      case Parse::NodeKind::TuplePattern:
       case Parse::NodeKind::WhileCondition:
       case Parse::NodeKind::WhileConditionStart:
         return IdKind::InstBlockId;
@@ -365,19 +368,19 @@ class NodeStack {
       case Parse::NodeKind::ArrayExprSemi:
       case Parse::NodeKind::ClassIntroducer:
       case Parse::NodeKind::CodeBlockStart:
+      case Parse::NodeKind::ExprOpenParen:
       case Parse::NodeKind::FunctionIntroducer:
       case Parse::NodeKind::IfStatementElse:
       case Parse::NodeKind::ImplicitParamListStart:
       case Parse::NodeKind::InterfaceIntroducer:
       case Parse::NodeKind::LetIntroducer:
-      case Parse::NodeKind::ParamListStart:
-      case Parse::NodeKind::ParenExprOrTupleLiteralStart:
       case Parse::NodeKind::QualifiedDecl:
       case Parse::NodeKind::ReturnedModifier:
       case Parse::NodeKind::ReturnStatementStart:
       case Parse::NodeKind::ReturnVarModifier:
       case Parse::NodeKind::SelfValueName:
       case Parse::NodeKind::StructLiteralOrStructTypeLiteralStart:
+      case Parse::NodeKind::TuplePatternStart:
       case Parse::NodeKind::VariableInitializer:
       case Parse::NodeKind::VariableIntroducer:
         return IdKind::SoloParseNode;

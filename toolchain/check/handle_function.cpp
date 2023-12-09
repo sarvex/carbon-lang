@@ -79,7 +79,7 @@ static auto BuildFunctionDecl(Context& context, bool is_definition)
   }
 
   SemIR::InstBlockId param_refs_id =
-      context.node_stack().Pop<Parse::NodeKind::ParamList>();
+      context.node_stack().Pop<Parse::NodeKind::TuplePattern>();
   SemIR::InstBlockId implicit_param_refs_id =
       context.node_stack().PopIf<Parse::NodeKind::ImplicitParamList>().value_or(
           SemIR::InstBlockId::Empty);
@@ -105,6 +105,7 @@ static auto BuildFunctionDecl(Context& context, bool is_definition)
     context.TODO(context.decl_state_stack().innermost().saw_decl_modifier,
                  "interface modifier");
   }
+  context.decl_state_stack().Pop(DeclState::Fn);
 
   // Add the function declaration.
   auto function_decl = SemIR::FunctionDecl{
@@ -178,7 +179,6 @@ auto HandleFunctionDecl(Context& context, Parse::NodeId /*parse_node*/)
     -> bool {
   BuildFunctionDecl(context, /*is_definition=*/false);
   context.decl_name_stack().PopScope();
-  context.decl_state_stack().Pop(DeclState::Fn);
   return true;
 }
 
@@ -204,7 +204,6 @@ auto HandleFunctionDefinition(Context& context, Parse::NodeId parse_node)
   context.inst_block_stack().Pop();
   context.return_scope_stack().pop_back();
   context.decl_name_stack().PopScope();
-  context.decl_state_stack().Pop(DeclState::Fn);
   return true;
 }
 
