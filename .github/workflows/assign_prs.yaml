@@ -30,21 +30,21 @@ jobs:
 
       - id: assign-leads
         if: steps.filter.outputs.leads == 'true'
-        uses: hkusu/review-assign-action@v1.3.0
+        uses: hkusu/review-assign-action@v1.3.1
         with:
           reviewers: KateGregory, chandlerc, zygoloid
           max-num-of-reviewers: 1
 
       - id: assign-explorer
         if: steps.filter.outputs.explorer == 'true'
-        uses: hkusu/review-assign-action@v1.3.0
+        uses: hkusu/review-assign-action@v1.3.1
         with:
           reviewers: geoffromer, jonmeow, zygoloid
           max-num-of-reviewers: 1
 
       - id: assign-toolchain
         if: steps.filter.outputs.toolchain == 'true'
-        uses: hkusu/review-assign-action@v1.3.0
+        uses: hkusu/review-assign-action@v1.3.1
         with:
           reviewers: chandlerc, jonmeow, zygoloid
           max-num-of-reviewers: 1
@@ -54,7 +54,7 @@ jobs:
           steps.filter.outputs.leads != 'true' &&
           steps.filter.outputs.explorer != 'true' &&
           steps.filter.outputs.toolchain != 'true'
-        uses: hkusu/review-assign-action@v1.3.0
+        uses: hkusu/review-assign-action@v1.3.1
         with:
           reviewers: chandlerc, jonmeow, josh11b, zygoloid
           max-num-of-reviewers: 1
